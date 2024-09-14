@@ -14,13 +14,13 @@
 .vscode-server/
 
 ##Archivo bash-history
-.bash-history
+.bash_history
 
 ##Archivo bash-logout
-.bash-logout
+.bash_logout
 
 ##Archivo bash-profile
-.bash-profile
+.bash_profile
 
 ##Archivo bashrc
 .bashrc
