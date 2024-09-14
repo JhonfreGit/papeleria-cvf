@@ -1,0 +1,29 @@
+##Carpeta cache
+.cache/
+
+##Carpeta dotnet
+.dotnet/
+
+##Carpeta linuxbrew
+.linuxbrew/
+
+##Carpeta ssh
+.ssh/
+
+##Carpeta vscode-server
+.vscode-server/
+
+##Archivo bash-history
+.bash-history
+
+##Archivo bash-logout
+.bash-logout
+
+##Archivo bash-profile
+.bash-profile
+
+##Archivo bashrc
+.bashrc
+
+##Archivo wget-hsts
+.wget-hsts
