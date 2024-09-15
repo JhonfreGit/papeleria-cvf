@@ -22,8 +22,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Redirigir según el rol
             if ($user['role'] == 'administrador') {
                 header('Location: admin_dashboard.php'); // Redirige al panel de administrador
-            } else {
-                header('Location: dashboard.php'); // Redirige al panel de usuario
+            } else if ($user['role'] == 'empleado') {
+                header('Location: dashboard_register.php'); // Redirige al panel de empleado
+            } else if ($user['role'] == 'jefe') {
+                header('Location: dashboard_consult.php'); // Redirige al panel de jefe
             }
         } else {
             $error = "La contraseña es incorrecta.";
