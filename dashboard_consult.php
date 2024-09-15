@@ -45,10 +45,10 @@ if (isset($_POST['employee_id'])) {
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
+    <div id="consult-dashboard" class="container">
         <h1>Consultar actividades por empleado</h1>
 
-        <form action="dashboard.php" method="POST">
+        <form action="dashboard_consult.php" method="POST">
             <label for="employee">Selecciona un empleado:</label>
             <select name="employee_id" id="employee" required>
                 <option value="">Seleccionar empleado</option>
