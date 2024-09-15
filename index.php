@@ -15,7 +15,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($user && password_verify($password, $user['password'])) {
         $_SESSION['username'] = $user['username'];
         $_SESSION['role'] = $user['role'];
-        header('Location: dashboard.php');
+
+        // Redirigir según el rol
+        if ($user['role'] == 'administrador') {
+            header('Location: admin_dashboard.php'); // Redirige al panel de administrador
+        } else {
+            header('Location: dashboard.php'); // Redirige al panel normal
+        }
     } else {
         $error = "Usuario o contraseña incorrectos";
     }
