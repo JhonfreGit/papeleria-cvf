@@ -2,6 +2,8 @@
 session_start();
 include 'db_connection.php';
 
+$error = '';
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
@@ -11,19 +13,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->execute();
     $result = $stmt->get_result();
     $user = $result->fetch_assoc();
+    
+    if ($user) {
+        if ($password == $user['password']) {
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['role'] = $user['role'];
 
-    if ($user && password_verify($password, $user['password'])) {
-        $_SESSION['username'] = $user['username'];
-        $_SESSION['role'] = $user['role'];
-
-        // Redirigir según el rol
-        if ($user['role'] == 'administrador') {
-            header('Location: admin_dashboard.php'); // Redirige al panel de administrador
+            // Redirigir según el rol
+            if ($user['role'] == 'administrador') {
+                header('Location: admin_dashboard.php'); // Redirige al panel de administrador
+            } else {
+                header('Location: dashboard.php'); // Redirige al panel de usuario
+            }
         } else {
-            header('Location: dashboard.php'); // Redirige al panel normal
+            $error = "La contraseña es incorrecta.";
         }
     } else {
-        $error = "Usuario o contraseña incorrectos";
+        $error = "Usuario no encontrado.";
     }
 }
 ?>

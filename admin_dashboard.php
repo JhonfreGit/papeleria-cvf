@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $_POST['username'];
     $email = $_POST['email'];
     $role = $_POST['role'];
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $password = $_POST['password'];
 
     // Insertar el nuevo usuario en la base de datos
     $stmt = $conn->prepare("INSERT INTO users (identification_number, username, password, email, role) VALUES (?, ?, ?, ?, ?)");
