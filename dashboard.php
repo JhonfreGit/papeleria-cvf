@@ -13,12 +13,12 @@ $error = '';
 $success = '';
 
 // Procesar solicitudes de eliminación
-if (isset($_GET['delete']) && isset($_GET['fecha']) && isset($_GET['hora'])) {
-    $fecha = $_GET['fecha'];
+if (isset($_GET['delete']) && isset($_GET['date']) && isset($_GET['hora'])) {
+    $date = $_GET['date'];
     $hora = $_GET['hora'];
 
-    $stmt = $conn->prepare("DELETE FROM activities WHERE fecha = ? AND hora = ?");
-    $stmt->bind_param("ss", $fecha, $hora);
+    $stmt = $conn->prepare("DELETE FROM activities WHERE date = ? AND hora = ?");
+    $stmt->bind_param("ss", $date, $hora);
     if ($stmt->execute()) {
         $success = "Actividad eliminada correctamente.";
     } else {
@@ -28,28 +28,28 @@ if (isset($_GET['delete']) && isset($_GET['fecha']) && isset($_GET['hora'])) {
 
 // Procesar el formulario de agregar/actualizar activities
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $fecha = $_POST['fecha'];
+    $date = $_POST['date'];
     $activities = $_POST['actividad'];
     $horas = $_POST['hora'];
 
-    // Validar si hay activities duplicadas (fecha y hora)
+    // Validar si hay activities duplicadas (date y hora)
     $duplicados = [];
 
     foreach ($horas as $index => $hora) {
         $actividad = $activities[$index];
 
-        // Consultar si ya existe una actividad registrada para la misma fecha y hora
-        $stmt = $conn->prepare("SELECT * FROM activities WHERE fecha = ? AND hora = ?");
-        $stmt->bind_param("ss", $fecha, $hora);
+        // Consultar si ya existe una actividad registrada para la misma date y hora
+        $stmt = $conn->prepare("SELECT * FROM activities WHERE date = ? AND hora = ?");
+        $stmt->bind_param("ss", $date, $hora);
         $stmt->execute();
         $result = $stmt->get_result();
 
         if ($result->num_rows > 0) {
-            $duplicados[] = "Hora duplicada: $hora para la fecha $fecha";
+            $duplicados[] = "Hora duplicada: $hora para la date $date";
         } else {
             // Insertar o actualizar la actividad
-            $stmt = $conn->prepare("INSERT INTO activities (fecha, hora, actividad) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE actividad = ?");
-            $stmt->bind_param("ssss", $fecha, $hora, $actividad, $actividad);
+            $stmt = $conn->prepare("INSERT INTO activities (date, hora, actividad) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE actividad = ?");
+            $stmt->bind_param("ssss", $date, $hora, $actividad, $actividad);
             $stmt->execute();
         }
     }
@@ -75,11 +75,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <h1>Registrar activities</h1>
 
         <form action="dashboard.php" method="POST">
-            <label for="fecha">Selecciona una fecha (últimos 8 días, sin fines de semana):</label>
-            <input type="date" id="fecha" name="fecha" max="<?php echo date('Y-m-d'); ?>" min="<?php echo date('Y-m-d', strtotime('-8 days')); ?>" required>
+            <label for="date">Selecciona una date (últimos 8 días, sin fines de semana):</label>
+            <input type="date" id="date" name="date" max="<?php echo date('Y-m-d'); ?>" min="<?php echo date('Y-m-d', strtotime('-8 days')); ?>" required>
 
             <!-- Mostrar mensaje si el día seleccionado es sábado o domingo -->
-            <div id="mensajeFecha"></div>
+            <div id="mensajedate"></div>
 
             <!-- Tabla de activities -->
             <h2>activities</h2>
@@ -113,8 +113,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         document.addEventListener('DOMContentLoaded', function () {
             const activitiesTable = document.querySelector('#activitiesTable tbody');
             const agregarFilaBtn = document.querySelector('#agregarFila');
-            const fechaInput = document.querySelector('#fecha');
-            const mensajeFecha = document.querySelector('#mensajeFecha');
+            const dateInput = document.querySelector('#date');
+            const mensajedate = document.querySelector('#mensajedate');
 
             // Rango de horas permitidas (de 8am a 5pm)
             const horasDisponibles = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
