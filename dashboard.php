@@ -12,52 +12,96 @@ if (!isset($_SESSION['username'])) {
 $error = '';
 $success = '';
 
-// Procesar solicitudes de eliminación
-if (isset($_GET['delete']) && isset($_GET['date']) && isset($_GET['hora'])) {
-    $date = $_GET['date'];
-    $hora = $_GET['hora'];
+$is_jefe = $_SESSION['rol'] === 'jefe';
 
-    $stmt = $conn->prepare("DELETE FROM activities WHERE date = ? AND hora = ?");
-    $stmt->bind_param("ss", $date, $hora);
-    if ($stmt->execute()) {
-        $success = "Actividad eliminada correctamente.";
-    } else {
-        $error = "Error al eliminar la actividad.";
+if ($is_jefe) {
+    // Obtener la lista de empleados para el campo select
+    $empleados_query = "SELECT id, nombre FROM empleados";
+    $empleados_result = mysqli_query($conn, $empleados_query);
+    
+    // Mostrar formulario de consulta
+    echo '<h1>Consulta de Actividades</h1>';
+    echo '<form method="POST" action="">';
+    echo '<label for="empleado">Selecciona un empleado:</label>';
+    echo '<select id="empleado" name="empleado">';
+    while ($row = mysqli_fetch_assoc($empleados_result)) {
+        echo '<option value="' . $row['id'] . '">' . $row['nombre'] . '</option>';
     }
-}
+    echo '</select>';
+    echo '<input type="submit" name="consultar" value="Consultar">';
+    echo '</form>';
 
-// Procesar el formulario de agregar/actualizar activities
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $date = $_POST['date'];
-    $activities = $_POST['actividad'];
-    $horas = $_POST['hora'];
+    // Mostrar actividades si se ha enviado el formulario
+    if (isset($_POST['consultar'])) {
+        $empleado_id = $_POST['empleado'];
+        
+        // Obtener las actividades del empleado seleccionado
+        $actividades_query = "SELECT fecha, hora, actividad FROM actividades WHERE empleado_id = $empleado_id";
+        $actividades_result = mysqli_query($conn, $actividades_query);
 
-    // Validar si hay activities duplicadas (date y hora)
-    $duplicados = [];
-
-    foreach ($horas as $index => $hora) {
-        $actividad = $activities[$index];
-
-        // Consultar si ya existe una actividad registrada para la misma date y hora
-        $stmt = $conn->prepare("SELECT * FROM activities WHERE date = ? AND hora = ?");
-        $stmt->bind_param("ss", $date, $hora);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result->num_rows > 0) {
-            $duplicados[] = "Hora duplicada: $hora para la date $date";
+        if (mysqli_num_rows($actividades_result) > 0) {
+            echo '<table border="1">';
+            echo '<tr><th>Fecha</th><th>Hora</th><th>Actividad</th></tr>';
+            while ($row = mysqli_fetch_assoc($actividades_result)) {
+                echo '<tr>';
+                echo '<td>' . $row['fecha'] . '</td>';
+                echo '<td>' . $row['hora'] . '</td>';
+                echo '<td>' . $row['actividad'] . '</td>';
+                echo '</tr>';
+            }
+            echo '</table>';
         } else {
-            // Insertar o actualizar la actividad
-            $stmt = $conn->prepare("INSERT INTO activities (date, hora, actividad) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE actividad = ?");
-            $stmt->bind_param("ssss", $date, $hora, $actividad, $actividad);
-            $stmt->execute();
+            echo 'No hay actividades registradas para el empleado seleccionado.';
+        }
+    }
+} else {
+    // Procesar solicitudes de eliminación
+    if (isset($_GET['delete']) && isset($_GET['date']) && isset($_GET['hour'])) {
+        $date = $_GET['date'];
+        $hour = $_GET['hour'];
+
+        $stmt = $conn->prepare("DELETE FROM activities WHERE date = ? AND hour = ?");
+        $stmt->bind_param("ss", $date, $hour);
+        if ($stmt->execute()) {
+            $success = "activity eliminada correctamente.";
+        } else {
+            $error = "Error al eliminar la activity.";
         }
     }
 
-    if (count($duplicados) > 0) {
-        $error = implode('<br>', $duplicados);
-    } else {
-        $success = "activities registradas/actualizadas correctamente.";
+    // Procesar el formulario de agregar/actualizar activities
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        $date = $_POST['date'];
+        $activities = $_POST['activity'];
+        $hours = $_POST['hour'];
+
+        // Validar si hay activities duplicadas (date y hour)
+        $duplicados = [];
+
+        foreach ($hours as $index => $hour) {
+            $activity = $activities[$index];
+
+            // Consultar si ya existe una activity registrada para la misma date y hour
+            $stmt = $conn->prepare("SELECT * FROM activities WHERE date = ? AND hour = ?");
+            $stmt->bind_param("ss", $date, $hour);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows > 0) {
+                $duplicados[] = "hour duplicada: $hour para la date $date";
+            } else {
+                // Insertar o actualizar la activity
+                $stmt = $conn->prepare("INSERT INTO activities (date, hour, activity) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE activity = ?");
+                $stmt->bind_param("ssss", $date, $hour, $activity, $activity);
+                $stmt->execute();
+            }
+        }
+
+        if (count($duplicados) > 0) {
+            $error = implode('<br>', $duplicados);
+        } else {
+            $success = "activities registradas/actualizadas correctamente.";
+        }
     }
 }
 ?>
@@ -72,41 +116,43 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body>
     <div class="container">
-        <h1>Registrar activities</h1>
+        <?php if (!$is_jefe): ?>
+            <h1>Registrar activities</h1>
 
-        <form action="dashboard.php" method="POST">
-            <label for="date">Selecciona una date (últimos 8 días, sin fines de semana):</label>
-            <input type="date" id="date" name="date" max="<?php echo date('Y-m-d'); ?>" min="<?php echo date('Y-m-d', strtotime('-8 days')); ?>" required>
+            <form action="dashboard.php" method="POST">
+                <label for="date">Selecciona una date (últimos 8 días, sin fines de semana):</label>
+                <input type="date" id="date" name="date" max="<?php echo date('Y-m-d'); ?>" min="<?php echo date('Y-m-d', strtotime('-8 days')); ?>" required>
 
-            <!-- Mostrar mensaje si el día seleccionado es sábado o domingo -->
-            <div id="mensajedate"></div>
+                <!-- Mostrar mensaje si el día seleccionado es sábado o domingo -->
+                <div id="mensajedate"></div>
 
-            <!-- Tabla de activities -->
-            <h2>activities</h2>
-            <table id="activitiesTable">
-                <thead>
-                    <tr>
-                        <th>Hora</th>
-                        <th>Actividad</th>
-                        <th>Eliminar</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Filas de activities existentes o nuevas -->
-                </tbody>
-            </table>
-            <button type="button" id="agregarFila">Agregar Actividad</button>
+                <!-- Tabla de activities -->
+                <h2>activities</h2>
+                <table id="activitiesTable">
+                    <thead>
+                        <tr>
+                            <th>hour</th>
+                            <th>activity</th>
+                            <th>Eliminar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Filas de activities existentes o nuevas -->
+                    </tbody>
+                </table>
+                <button type="button" id="agregarFila">Agregar activity</button>
 
-            <!-- Mostrar mensajes de error o éxito -->
-            <?php if ($error): ?>
-                <p class="error-message"><?php echo $error; ?></p>
-            <?php endif; ?>
-            <?php if ($success): ?>
-                <p class="success-message"><?php echo $success; ?></p>
-            <?php endif; ?>
+                <!-- Mostrar mensajes de error o éxito -->
+                <?php if ($error): ?>
+                    <p class="error-message"><?php echo $error; ?></p>
+                <?php endif; ?>
+                <?php if ($success): ?>
+                    <p class="success-message"><?php echo $success; ?></p>
+                <?php endif; ?>
 
-            <button type="submit">Guardar activities</button>
-        </form>
+                <button type="submit">Guardar activities</button>
+            </form>
+        <?php endif; ?>
     </div>
 
     <script>
@@ -116,31 +162,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             const dateInput = document.querySelector('#date');
             const mensajedate = document.querySelector('#mensajedate');
 
-            // Rango de horas permitidas (de 8am a 5pm)
-            const horasDisponibles = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+            // Rango de hours permitidas (de 8am a 5pm)
+            const hoursDisponibles = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
 
             agregarFilaBtn.addEventListener('click', function () {
                 const fila = document.createElement('tr');
 
-                // Crear la celda para la hora (con un select)
-                const celdaHora = document.createElement('td');
-                const selectHora = document.createElement('select');
-                selectHora.name = 'hora[]';
-                horasDisponibles.forEach(hora => {
+                // Crear la celda para la hour (con un select)
+                const celdahour = document.createElement('td');
+                const selecthour = document.createElement('select');
+                selecthour.name = 'hour[]';
+                hoursDisponibles.forEach(hour => {
                     const option = document.createElement('option');
-                    option.value = hora;
-                    option.textContent = hora;
-                    selectHora.appendChild(option);
+                    option.value = hour;
+                    option.textContent = hour;
+                    selecthour.appendChild(option);
                 });
-                celdaHora.appendChild(selectHora);
+                celdahour.appendChild(selecthour);
 
-                // Crear la celda para la actividad (con un input)
-                const celdaActividad = document.createElement('td');
-                const inputActividad = document.createElement('input');
-                inputActividad.type = 'text';
-                inputActividad.name = 'actividad[]';
-                inputActividad.required = true;
-                celdaActividad.appendChild(inputActividad);
+                // Crear la celda para la activity (con un input)
+                const celdaactivity = document.createElement('td');
+                const inputactivity = document.createElement('input');
+                inputactivity.type = 'text';
+                inputactivity.name = 'activity[]';
+                inputactivity.required = true;
+                celdaactivity.appendChild(inputactivity);
 
                 // Crear la celda para eliminar (con un botón)
                 const celdaEliminar = document.createElement('td');
@@ -154,8 +200,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 celdaEliminar.appendChild(botonEliminar);
 
                 // Añadir las celdas a la fila
-                fila.appendChild(celdaHora);
-                fila.appendChild(celdaActividad);
+                fila.appendChild(celdahour);
+                fila.appendChild(celdaactivity);
                 fila.appendChild(celdaEliminar);
 
                 // Añadir la fila a la tabla
