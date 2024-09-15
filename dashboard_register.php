@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } else {
             // Insertar o actualizar la activity
             $stmt = $conn->prepare("INSERT INTO activities (date, hour, activity, user_id) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE activity = ?");
-            $stmt->bind_param("ssss", $date, $hour, $activity, $userId);
+            $stmt->bind_param("sssss", $date, $hour, $activity, $userId, $activity);
             $stmt->execute();
         }
     }
@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="container">
         <h1>Registrar activities</h1>
 
-        <form action="dashboard.php" method="POST">
+        <form action="dashboard_register.php" method="POST">
             <label for="date">Selecciona una date (últimos 8 días, sin fines de semana):</label>
             <input type="date" id="date" name="date" max="<?php echo date('Y-m-d'); ?>" min="<?php echo date('Y-m-d', strtotime('-8 days')); ?>" required>
 
