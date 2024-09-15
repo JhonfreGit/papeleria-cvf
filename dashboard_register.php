@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $date = $_POST['date'];
     $activities = $_POST['activity'];
     $hours = $_POST['hour'];
-    $_SESSION['id'];
+    $userId = $_SESSION['id'];
 
     // Validar si hay activities duplicadas (date y hour)
     $duplicados = [];
@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } else {
             // Insertar o actualizar la activity
             $stmt = $conn->prepare("INSERT INTO activities (date, hour, activity, user_id) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE activity = ?");
-            $stmt->bind_param("ssss", $date, $hour, $activity, $activity);
+            $stmt->bind_param("ssss", $date, $hour, $activity, $userId);
             $stmt->execute();
         }
     }
