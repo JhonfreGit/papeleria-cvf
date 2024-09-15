@@ -17,7 +17,7 @@ if (isset($_GET['delete']) && isset($_GET['fecha']) && isset($_GET['hora'])) {
     $fecha = $_GET['fecha'];
     $hora = $_GET['hora'];
 
-    $stmt = $conn->prepare("DELETE FROM actividades WHERE fecha = ? AND hora = ?");
+    $stmt = $conn->prepare("DELETE FROM activities WHERE fecha = ? AND hora = ?");
     $stmt->bind_param("ss", $fecha, $hora);
     if ($stmt->execute()) {
         $success = "Actividad eliminada correctamente.";
@@ -26,20 +26,20 @@ if (isset($_GET['delete']) && isset($_GET['fecha']) && isset($_GET['hora'])) {
     }
 }
 
-// Procesar el formulario de agregar/actualizar actividades
+// Procesar el formulario de agregar/actualizar activities
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $fecha = $_POST['fecha'];
-    $actividades = $_POST['actividad'];
+    $activities = $_POST['actividad'];
     $horas = $_POST['hora'];
 
-    // Validar si hay actividades duplicadas (fecha y hora)
+    // Validar si hay activities duplicadas (fecha y hora)
     $duplicados = [];
 
     foreach ($horas as $index => $hora) {
-        $actividad = $actividades[$index];
+        $actividad = $activities[$index];
 
         // Consultar si ya existe una actividad registrada para la misma fecha y hora
-        $stmt = $conn->prepare("SELECT * FROM actividades WHERE fecha = ? AND hora = ?");
+        $stmt = $conn->prepare("SELECT * FROM activities WHERE fecha = ? AND hora = ?");
         $stmt->bind_param("ss", $fecha, $hora);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $duplicados[] = "Hora duplicada: $hora para la fecha $fecha";
         } else {
             // Insertar o actualizar la actividad
-            $stmt = $conn->prepare("INSERT INTO actividades (fecha, hora, actividad) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE actividad = ?");
+            $stmt = $conn->prepare("INSERT INTO activities (fecha, hora, actividad) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE actividad = ?");
             $stmt->bind_param("ssss", $fecha, $hora, $actividad, $actividad);
             $stmt->execute();
         }
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (count($duplicados) > 0) {
         $error = implode('<br>', $duplicados);
     } else {
-        $success = "Actividades registradas/actualizadas correctamente.";
+        $success = "activities registradas/actualizadas correctamente.";
     }
 }
 ?>
@@ -67,20 +67,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Registrar Actividades</title>
+    <title>Dashboard - Registrar activities</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>Registrar Actividades</h1>
+        <h1>Registrar activities</h1>
 
         <form action="dashboard.php" method="POST">
             <label for="fecha">Selecciona una fecha (últimos 8 días, sin fines de semana):</label>
             <input type="date" id="fecha" name="fecha" max="<?php echo date('Y-m-d'); ?>" min="<?php echo date('Y-m-d', strtotime('-8 days')); ?>" required>
-            
-            <!-- Tabla de actividades -->
-            <h2>Actividades</h2>
-            <table id="actividadesTable">
+
+            <!-- Mostrar mensaje si el día seleccionado es sábado o domingo -->
+            <div id="mensajeFecha"></div>
+
+            <!-- Tabla de activities -->
+            <h2>activities</h2>
+            <table id="activitiesTable">
                 <thead>
                     <tr>
                         <th>Hora</th>
@@ -89,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Filas de actividades existentes o nuevas -->
+                    <!-- Filas de activities existentes o nuevas -->
                 </tbody>
             </table>
             <button type="button" id="agregarFila">Agregar Actividad</button>
@@ -102,15 +105,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <p class="success-message"><?php echo $success; ?></p>
             <?php endif; ?>
 
-            <button type="submit">Guardar Actividades</button>
+            <button type="submit">Guardar activities</button>
         </form>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const actividadesTable = document.querySelector('#actividadesTable tbody');
+            const activitiesTable = document.querySelector('#activitiesTable tbody');
             const agregarFilaBtn = document.querySelector('#agregarFila');
             const fechaInput = document.querySelector('#fecha');
+            const mensajeFecha = document.querySelector('#mensajeFecha');
 
             // Rango de horas permitidas (de 8am a 5pm)
             const horasDisponibles = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
@@ -155,22 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 fila.appendChild(celdaEliminar);
 
                 // Añadir la fila a la tabla
-                actividadesTable.appendChild(fila);
-            });
-
-            // Función para deshabilitar sábados y domingos en el calendario
-            function disableWeekends(date) {
-                const day = date.getDay();
-                return day === 0 || day === 6; // Deshabilitar domingos (0) y sábados (6)
-            }
-
-            // Configurar el calendario para deshabilitar fines de semana
-            fechaInput.addEventListener('change', function () {
-                const date = new Date(fechaInput.value);
-                if (disableWeekends(date)) {
-                    fechaInput.value = '';
-                    alert('Los sábados y domingos no están disponibles.');
-                }
+                activitiesTable.appendChild(fila);
             });
         });
     </script>
