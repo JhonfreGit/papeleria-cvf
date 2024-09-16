@@ -11,6 +11,7 @@ if (!isset($_SESSION['username'])) {
 // Variables para almacenar mensajes de error o éxito
 $error = '';
 $success = '';
+$user_id = $_SESSION['user_id'];
 
 // Procesar solicitudes de eliminación
 if (isset($_GET['delete']) && isset($_GET['date']) && isset($_GET['hour'])) {
@@ -31,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $date = $_POST['date'];
     $activities = $_POST['activity'];
     $hours = $_POST['hour'];
-    $userId = $_SESSION['id'];
+    $user_id = $_SESSION['user_id'];
 
     // Validar si hay activities duplicadas (date y hour)
     $duplicados = [];
@@ -48,10 +49,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($result->num_rows > 0) {
             $duplicados[] = "hour duplicada: $hour para la date $date";
         } else {
-            // Insertar o actualizar la activity
-            $stmt = $conn->prepare("INSERT INTO activities (date, hour, activity, user_id) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE activity = ?");
-            $stmt->bind_param("sssss", $date, $hour, $activity, $userId, $activity);
-            $stmt->execute();
+            if (isset($user_id)) {
+                // Insertar o actualizar la activity
+                $query = "INSERT INTO activities (user_id, activity, date, hour) VALUES (?, ?, ?, ?)";
+                $stmt = $conn->prepare($query);
+                $stmt->bind_param("isss", $user_id, $activity, $date, $hour);
+                $stmt->execute();
+            }
         }
     }
 
@@ -98,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </table>
             <button type="button" id="agregarFila">Agregar activity</button>
 
-            <!-- Mostrar mensajes de error o éxito -->
+            <!-- Mostrar mensajes de error o éxito dentro del formulario -->
             <?php if ($error): ?>
                 <p class="error-message"><?php echo $error; ?></p>
             <?php endif; ?>

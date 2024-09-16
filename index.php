@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($password == $user['password']) {
             $_SESSION['username'] = $user['username'];
             $_SESSION['role'] = $user['role'];
+            $_SESSION['user_id'] = $user['id'];
 
             // Redirigir según el rol
             if ($user['role'] == 'administrador') {
