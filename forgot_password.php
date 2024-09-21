@@ -1,18 +1,13 @@
 <?php
-include 'db_connection.php';
+require_once '../functions/users.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $cedula = $_POST['cedula'];
     $email = $_POST['email'];
-    $new_password = password_hash($_POST['new_password'], PASSWORD_DEFAULT);
+    $newPassword = $_POST['new_password'];
 
-    $stmt = $conn->prepare("UPDATE users SET password = ? WHERE username = ? AND email = ?");
-    $stmt->bind_param("sss", $new_password, $cedula, $email);
-    if ($stmt->execute()) {
-        $success = "La contraseña ha sido actualizada correctamente.";
-    } else {
-        $error = "No se encontraron usuarios con esos datos.";
-    }
+    // Llamar a la función resetPassword
+    $response = resetPassword($cedula, $email, $newPassword);
 }
 ?>
 
@@ -39,9 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             <button type="submit">Actualizar Contraseña</button>
         </form>
-        
-        <?php if (isset($success)) { echo "<p class='success'>$success</p>"; } ?>
-        <?php if (isset($error)) { echo "<p class='error'>$error</p>"; } ?>
+
+        <?php if (isset($response)) { echo "<p class='message'>$response</p>"; } ?>
     </div>
 </body>
 </html>

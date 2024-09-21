@@ -32,4 +32,17 @@ function authenticateUser($username, $password) {
         return "Usuario no encontrado.";
     }
 }
+
+function resetPassword($cedula, $email, $newPassword) {
+    $pdo = getDBConnection();
+    $newPasswordHashed = password_hash($newPassword, PASSWORD_DEFAULT);
+
+    $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE username = ? AND email = ?");
+    if ($stmt->execute([$newPasswordHashed, $cedula, $email])) {
+        return "La contraseña ha sido actualizada correctamente.";
+    } else {
+        return "No se encontraron usuarios con esos datos.";
+    }
+}
+
 ?>
