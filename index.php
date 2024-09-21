@@ -1,39 +1,14 @@
 <?php
-session_start();
-include 'db_connection.php';
+require_once '../functions/users.php';
 
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
-
-    $stmt = $conn->prepare("SELECT * FROM users WHERE username = ?");
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
     
-    if ($user) {
-        if ($password == $user['password']) {
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['role'] = $user['role'];
-            $_SESSION['user_id'] = $user['id'];
-
-            // Redirigir según el rol
-            if ($user['role'] == 'administrador') {
-                header('Location: admin_dashboard.php'); // Redirige al panel de administrador
-            } else if ($user['role'] == 'empleado') {
-                header('Location: dashboard_register.php'); // Redirige al panel de empleado
-            } else if ($user['role'] == 'jefe') {
-                header('Location: dashboard_consult.php'); // Redirige al panel de jefe
-            }
-        } else {
-            $error = "La contraseña es incorrecta.";
-        }
-    } else {
-        $error = "Usuario no encontrado.";
-    }
+    // Llamar a la función de autenticación
+    $error = authenticateUser($username, $password);
 }
 ?>
 
@@ -60,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         <p class="text-muted">¿Olvidaste tus credenciales? <a href="forgot_password.php">Ajustar credenciales</a></p>
         
-        <?php if (isset($error)) { echo "<p class='error'>$error</p>"; } ?>
+        <?php if ($error) { echo "<p class='error'>$error</p>"; } ?>
     </div>
 </body>
 </html>
