@@ -17,7 +17,7 @@
 .config/
 
 ##Carpeta vendor
-.vendor/
+/vendor/
 
 ##Carpeta local
 .local/
