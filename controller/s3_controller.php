@@ -9,8 +9,8 @@ function getS3Client() {
         'version' => 'latest',
         'region'  => 'us-east-1',
         'credentials' => [
-            'key'    => 'AWS_ACCESS_KEY',
-            'secret' => 'AWS_SECRET_KEY',
+            'key'    => getenv('AWS_ACCESS_KEY'),
+            'secret' => getenv('AWS_SECRET_KEY'),
         ],
     ]);
 }
