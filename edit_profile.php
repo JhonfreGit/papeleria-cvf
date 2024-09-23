@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once 'functions/users.php';  // Incluir funciones para usuarios
+require_once 'controller/s3_controller.php';    // Incluir el controlador de S3
 
 // Verifica si el usuario ha iniciado sesión
 if (!isset($_SESSION['username'])) {
@@ -13,6 +14,7 @@ $userData = getUserData($_SESSION['user_id']);  // Obtener datos del usuario
 $username = htmlspecialchars($userData['username']);
 $idNumber = htmlspecialchars($userData['identification_number']);
 $email = htmlspecialchars($userData['email']);
+$profileImageUri = htmlspecialchars($userData['profile_image']); // Imagen de perfil actual
 
 $message = ""; // Inicializa la variable para el mensaje
 
@@ -20,9 +22,21 @@ $message = ""; // Inicializa la variable para el mensaje
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];
     $password = $_POST['password'];
-    
-    // Llamar a la función para actualizar los datos del usuario
-    if (updateUserData($_SESSION['user_id'], $email, $password)) {
+    $file = $_FILES['profile_image']; // Captura la imagen del perfil
+
+    // Si hay una nueva imagen seleccionada
+    if ($file && $file['tmp_name']) {
+        // Eliminar la imagen anterior de S3
+        if ($profileImageUri) {
+            deletePreviousProfileImageFromS3($username, $profileImageUri);
+        }
+        
+        // Subir la nueva imagen a S3
+        $profileImageUri = uploadProfileImageToS3($username, $file);
+    }
+
+    // Llamar a la función para actualizar los datos del usuario con la nueva imagen
+    if (updateUserData($_SESSION['user_id'], $email, $password, $profileImageUri)) {
         $message = "<p class='success-message'>Datos actualizados correctamente.</p>";
     } else {
         $message = "<p class='error-message'>Error al actualizar los datos.</p>";
@@ -52,17 +66,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         <div class="profile-container">
             <div class="profile-pic">
-                <img src="path/to/default/profile.jpg" alt="Foto de perfil" id="profileImage">
+                <img src="<?php echo $profileImageUri ?: 'profile/profile.jpg'; ?>" alt="Foto de perfil" id="profileImage">
                 <button onclick="openFileDialog()">
                     <i class="fas fa-pencil-alt"></i>
                 </button>
-                <input type="file" id="fileInput" style="display: none;" onchange="updateProfileImage(this)">
+                <input type="file" id="fileInput" name="profile_image" style="display: none;" onchange="updateProfileImage(this)">
             </div>
 
             <div class="profile-info">
                 <p>Número de identificación: <strong><?php echo $idNumber; ?></strong></p>
                 <p>Nombre de usuario: <strong><?php echo $username; ?></strong></p>
-                <form action="edit_profile.php" method="POST">
+                <form action="edit_profile.php" method="POST" enctype="multipart/form-data">
                     <label for="email">Email:</label>
                     <input type="email" name="email" value="<?php echo $email; ?>" required>
 
