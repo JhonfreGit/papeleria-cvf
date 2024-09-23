@@ -8,6 +8,10 @@ function getS3Client() {
     return new S3Client([
         'version' => 'latest',
         'region'  => 'us-east-1',
+        'credentials' => [
+            'key'    => 'AWS_ACCESS_KEY',
+            'secret' => 'AWS_SECRET_KEY',
+        ],
     ]);
 }
 
@@ -48,3 +52,4 @@ function deletePreviousProfileImageFromS3($username, $imageUri) {
         error_log($e->getMessage());
     }
 }
+?>
