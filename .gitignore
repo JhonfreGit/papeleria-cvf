@@ -13,6 +13,15 @@
 ##Carpeta vscode-server
 .vscode-server/
 
+##Carpeta config
+.config/
+
+##Carpeta local
+.local/
+
+##Carpeta vendor
+.vendor/
+
 ##Archivo bash-history
 .bash_history
 
@@ -30,3 +39,6 @@
 
 ##Archivo lesshst
 .lesshst
+
+##Archivo gitconfig
+.gitconfig

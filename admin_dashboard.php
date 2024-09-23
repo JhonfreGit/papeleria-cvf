@@ -1,27 +1,28 @@
 <?php
-session_start();
-include 'db_connection.php';
+include 'functions/admin.php';  // Incluir el archivo de funciones
 
-if ($_SESSION['role'] != 'administrador') {
-    header('Location: index.php');
-    exit;
-}
+// Verificar que el usuario sea administrador
+verificarSesionAdministrador();
 
+// Variables para almacenar mensajes de error o éxito
+$success = '';
+$error = '';
+
+// Procesar el formulario de creación de usuario
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $identification_number = $_POST['identification_number'];
     $username = $_POST['username'];
     $email = $_POST['email'];
-    $role = $_POST['role'];
     $password = $_POST['password'];
+    $role = $_POST['role'];
 
-    // Insertar el nuevo usuario en la base de datos
-    $stmt = $conn->prepare("INSERT INTO users (identification_number, username, password, email, role) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("sssss", $identification_number, $username, $password, $email, $role);
-    
-    if ($stmt->execute()) {
-        $success = "Usuario creado exitosamente.";
+    // Crear el usuario y obtener el mensaje de éxito o error
+    $mensaje = crearUsuario($identification_number, $username, $email, $password, $role);
+
+    if ($mensaje === "Usuario creado exitosamente.") {
+        $success = $mensaje;
     } else {
-        $error = "Error al crear el usuario.";
+        $error = $mensaje;
     }
 }
 ?>
@@ -61,8 +62,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <button type="submit">Crear Usuario</button>
         </form>
 
-        <?php if (isset($success)) { echo "<p class='success'>$success</p>"; } ?>
-        <?php if (isset($error)) { echo "<p class='error'>$error</p>"; } ?>
+        <!-- Mostrar mensajes de éxito o error -->
+        <?php if ($success): ?>
+            <p class='success'><?php echo $success; ?></p>
+        <?php endif; ?>
+
+        <?php if ($error): ?>
+            <p class='error'><?php echo $error; ?></p>
+        <?php endif; ?>
     </div>
 </body>
 </html>

@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../functions/activities.php';  // Incluir las funciones
+require_once 'functions/activities.php';  // Incluir las funciones
 
 // Verifica si el usuario ha iniciado sesión
 if (!isset($_SESSION['username'])) {

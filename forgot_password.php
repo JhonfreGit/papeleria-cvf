@@ -1,5 +1,5 @@
 <?php
-require_once '../functions/users.php';
+require_once 'functions/users.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $cedula = $_POST['cedula'];

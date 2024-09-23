@@ -1,38 +1,22 @@
 <?php
-session_start();
-include 'db_connection.php';  // Incluir la conexión a la base de datos
+include 'functions/activities.php';  // Incluir el archivo de funciones
 
-// Verifica si el usuario ha iniciado sesión y tiene el rol de jefe
-if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'jefe') {
-    header('Location: index.php');
-    exit();
-}
+// Verificar que el usuario sea jefe
+verificarSesionJefe();
 
 // Variables para almacenar mensajes de error o éxito
 $error = '';
 $success = '';
 
 // Obtener la lista de empleados
-$stmt = $conn->prepare("SELECT id, username FROM users WHERE role = 'empleado'");
-$stmt->execute();
-$result = $stmt->get_result();
-$empleados = [];
-while ($row = $result->fetch_assoc()) {
-    $empleados[] = $row;
-}
+$empleados = obtenerEmpleados();
 
 // Procesar selección de empleado y obtener actividades
 $selectedEmployee = null;
 $activities = [];
 if (isset($_POST['employee_id'])) {
     $selectedEmployee = $_POST['employee_id'];
-    $stmt = $conn->prepare("SELECT date, hour, activity FROM activities WHERE user_id = ? ORDER BY date ASC, hour ASC");
-    $stmt->bind_param("i", $selectedEmployee);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    while ($row = $result->fetch_assoc()) {
-        $activities[] = $row;
-    }
+    $activities = obtenerActividadesPorEmpleado($selectedEmployee);
 }
 ?>
 
