@@ -45,3 +45,9 @@
 
 ##Archivo viminfo
 .viminfo
+
+##Archivo composer.json
+composer.json
+
+##Archivo composer.lock
+composer.lock
