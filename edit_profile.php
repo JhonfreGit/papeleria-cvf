@@ -19,6 +19,7 @@ $profileImageUri = htmlspecialchars($userData['profile_image']); // Imagen de pe
 $message = ""; // Inicializa la variable para el mensaje
 
 // Procesar el formulario al enviarlo
+// Procesar el formulario al enviarlo
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];
     $password = $_POST['password'];
@@ -43,7 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $response = uploadProfileImageToS3($username, $file);
         if ($response['success']) {
             $imageUrl = $response['url'];
-            $dbResponse = saveImageUrlToDatabase($username, $imageUrl);
+            // Actualizar la base de datos con la nueva URL de la imagen
+            $dbResponse = updateUserData($_SESSION['user_id'], $email, $password, $imageUrl);
             if ($dbResponse) {
                 echo "<script>alert('Imagen subida y URL guardada en la base de datos.');</script>";
             } else {
@@ -51,6 +53,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         } else {
             echo "<script>alert('" . addslashes($response['message']) . "');</script>";
+        }
+    } else {
+        // Si no se subió una nueva imagen, simplemente actualizar los datos del usuario sin cambiar la imagen
+        $dbResponse = updateUserData($_SESSION['user_id'], $email, $password, $profileImageUri);
+        if ($dbResponse) {
+            echo "<script>alert('Datos guardados correctamente.');</script>";
+        } else {
+            echo "<script>alert('Hubo un problema al guardar los datos.');</script>";
         }
     }
 }

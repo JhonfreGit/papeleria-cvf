@@ -16,11 +16,10 @@ function getS3Client() {
 }
 
 // Define el ARN de tu bucket
-$bucketArn = 'arn:aws:s3:::profile-photo-papeleria-cvf';
-$bucketName = basename($bucketArn); // Extrae el nombre del bucket del ARN
+$bucketName = 'profile-photo-papeleria-cvf';
 
 function uploadProfileImageToS3($username, $file) {
-    global $bucketName; // Utiliza el nombre del bucket definido anteriormente
+    global $bucketName;
     
     if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
         return [
@@ -30,21 +29,20 @@ function uploadProfileImageToS3($username, $file) {
     }
 
     $client = getS3Client();
-    $folder = "$username";
     $filename = basename($file['name']);
-    $filepath = "$folder/$filename";
+    $filepath = "$filename";
 
     try {
         $result = $client->putObject([
             'Bucket' => $bucketName,
             'Key'    => $filepath,
             'SourceFile' => $file['tmp_name'],
-            'ACL'    => 'public-read',
+            'ACL'    => 'public-read', // Para que sea accesible públicamente
         ]);
 
         return [
             'success' => true,
-            'url' => $client->getObjectUrl($bucketName, $filepath),
+            'url' => $result['ObjectURL'], // Obtiene la URL del objeto
             'message' => 'Imagen subida correctamente.',
         ];
     } catch (AwsException $e) {
