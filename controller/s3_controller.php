@@ -18,7 +18,7 @@ function getS3Client() {
 function uploadProfileImageToS3($username, $file) {
     $bucket = 'profile-photo-papeleria-cvf';
     $client = getS3Client();
-    $folder = "profile_pictures/$username";
+    $folder = "$username";
     $filename = basename($file['name']);
     $filepath = "$folder/$filename";
 
@@ -29,7 +29,7 @@ function uploadProfileImageToS3($username, $file) {
             'SourceFile' => $file['tmp_name'],
             'ACL'    => 'public-read',
         ]);
-
+        
         return $client->getObjectUrl($bucket, $filepath);
     } catch (AwsException $e) {
         error_log($e->getMessage());
