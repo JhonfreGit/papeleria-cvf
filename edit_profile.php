@@ -37,6 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Perfil - Papelería CVF</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" href="https://www.flaticon.es/iconos-gratis/lapiz" type="image/x-icon">
+    
     <script>
         function openFileDialog() {
             document.getElementById('fileInput').click();
@@ -50,7 +53,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="profile-container">
             <div class="profile-pic">
                 <img src="path/to/default/profile.jpg" alt="Foto de perfil" id="profileImage">
-                <button onclick="openFileDialog()">✏️</button>
+                <button onclick="openFileDialog()">
+                    <i class="fas fa-pencil-alt"></i>
+                </button>
                 <input type="file" id="fileInput" style="display: none;" onchange="updateProfileImage(this)">
             </div>
 
