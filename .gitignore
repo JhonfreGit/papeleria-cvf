@@ -16,11 +16,11 @@
 ##Carpeta config
 .config/
 
-##Carpeta local
-.local/
-
 ##Carpeta vendor
 .vendor/
+
+##Carpeta local
+.local/
 
 ##Archivo bash-history
 .bash_history
@@ -42,3 +42,6 @@
 
 ##Archivo gitconfig
 .gitconfig
+
+##Archivo viminfo
+.viminfo
