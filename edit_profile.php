@@ -19,10 +19,7 @@ $profileImageUri = htmlspecialchars($userData['profile_image']); // Imagen de pe
 $message = ""; // Inicializa la variable para el mensaje
 
 // Procesar el formulario al enviarlo
-// Procesar el formulario al enviarlo
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $email = $_POST['email'];
-    $password = $_POST['password'];
     $profileImageUri = $userData['profile_image']; // Mantener la URI actual
 
     if (isset($_FILES['profile_image']) && $_FILES['profile_image']['tmp_name']) {
@@ -45,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($response['success']) {
             $imageUrl = $response['url'];
             // Actualizar la base de datos con la nueva URL de la imagen
-            $dbResponse = updateUserData($_SESSION['user_id'], $email, $password, $imageUrl);
+            $dbResponse = updateUserData($_SESSION['user_id'], $email, null, $imageUrl);
             if ($dbResponse) {
                 echo "<script>alert('Imagen subida y URL guardada en la base de datos.');</script>";
             } else {
@@ -53,14 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         } else {
             echo "<script>alert('" . addslashes($response['message']) . "');</script>";
-        }
-    } else {
-        // Si no se subió una nueva imagen, simplemente actualizar los datos del usuario sin cambiar la imagen
-        $dbResponse = updateUserData($_SESSION['user_id'], $email, $password, $profileImageUri);
-        if ($dbResponse) {
-            echo "<script>alert('Datos guardados correctamente.');</script>";
-        } else {
-            echo "<script>alert('Hubo un problema al guardar los datos.');</script>";
         }
     }
 }
@@ -98,14 +87,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="profile-info">
                 <p>Número de identificación: <strong><?php echo $idNumber; ?></strong></p>
                 <p>Nombre de usuario: <strong><?php echo $username; ?></strong></p>
+                <p>Email: <strong><?php echo $email; ?></strong></p>
                 <form action="edit_profile.php" method="POST" enctype="multipart/form-data">
-                    <label for="email">Email:</label>
-                    <input type="email" name="email" value="<?php echo $email; ?>" required>
-
-                    <label for="password">Contraseña:</label>
-                    <input type="password" name="password" required>
-
-                    <button type="submit">Guardar</button>
+                    <button type="submit">Guardar nueva foto de perfil</button>
                 </form>
                 <?php if ($message): ?>
                     <div class="message">

@@ -62,7 +62,7 @@ function getUserData($user_id) {
 
 function updateUserData($userId, $email, $password, $profileImageUri) {
     $pdo = getDBConnection();
-    $stmt = $pdo->prepare("UPDATE users SET email = ?, password = ?, profile_image = ? WHERE id = ?");
-    return $stmt->execute([$email, $password, $profileImageUri, $userId]);
+    $stmt = $pdo->prepare("UPDATE users SET profile_image = ? WHERE id = ?");
+    return $stmt->execute([$profileImageUri, $userId]);
 }
 ?>
