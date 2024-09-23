@@ -16,7 +16,7 @@ function uploadProfileImageToS3($username, $file) {
     $client = getS3Client();
     $folder = "profile_pictures/$username";
     $filename = basename($file['name']);
-    $filepath = $folder . "/" . $filename;
+    $filepath = "$folder/$filename";
 
     try {
         $client->putObject([
@@ -48,4 +48,3 @@ function deletePreviousProfileImageFromS3($username, $imageUri) {
         error_log($e->getMessage());
     }
 }
-?>

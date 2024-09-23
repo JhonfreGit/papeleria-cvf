@@ -19,13 +19,16 @@ $profileImageUri = htmlspecialchars($userData['profile_image']); // Imagen de pe
 $message = ""; // Inicializa la variable para el mensaje
 
 // Procesar el formulario al enviarlo
+// Procesar el formulario al enviarlo
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];
     $password = $_POST['password'];
-    $file = $_FILES['profile_image']; // Captura la imagen del perfil
+    $profileImageUri = $userData['profile_image']; // Mantener la URI actual
 
-    // Si hay una nueva imagen seleccionada
-    if ($file && $file['tmp_name']) {
+    // Eliminar la imagen anterior de S3 si se sube una nueva
+    if (isset($_FILES['profile_image']) && $_FILES['profile_image']['tmp_name']) {
+        $file = $_FILES['profile_image'];
+
         // Eliminar la imagen anterior de S3
         if ($profileImageUri) {
             deletePreviousProfileImageFromS3($username, $profileImageUri);
@@ -35,8 +38,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $profileImageUri = uploadProfileImageToS3($username, $file);
     }
 
-    // Llamar a la función para actualizar los datos del usuario con la nueva imagen
-    if (updateUserData($_SESSION['user_id'], $email, $password, $profileImageUri)) {
+    // Si se ha ingresado una nueva contraseña, actualizarla
+    if (empty($password)) {
+        // Mantener la contraseña actual
+        $passwordHash = $userData['password'];
+    } else {
+        // Hashear la nueva contraseña
+        $passwordHash = $password;
+    }
+
+    // Llamar a la función para actualizar los datos del usuario
+    if (updateUserData($_SESSION['user_id'], $email, $passwordHash, $profileImageUri)) {
         $message = "<p class='success-message'>Datos actualizados correctamente.</p>";
     } else {
         $message = "<p class='error-message'>Error al actualizar los datos.</p>";
