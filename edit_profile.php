@@ -19,39 +19,39 @@ $profileImageUri = htmlspecialchars($userData['profile_image']); // Imagen de pe
 $message = ""; // Inicializa la variable para el mensaje
 
 // Procesar el formulario al enviarlo
-// Procesar el formulario al enviarlo
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];
     $password = $_POST['password'];
     $profileImageUri = $userData['profile_image']; // Mantener la URI actual
 
-    // Eliminar la imagen anterior de S3 si se sube una nueva
     if (isset($_FILES['profile_image']) && $_FILES['profile_image']['tmp_name']) {
         $file = $_FILES['profile_image'];
+
+        // Comprobar si hay errores en la subida del archivo
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            error_log('Error de subida: ' . print_r($file, true));
+            echo "<script>alert('Error en el archivo subido.');</script>";
+            return;
+        }
 
         // Eliminar la imagen anterior de S3
         if ($profileImageUri) {
             deletePreviousProfileImageFromS3($username, $profileImageUri);
         }
-        
+
         // Subir la nueva imagen a S3
-        $profileImageUri = uploadProfileImageToS3($username, $file);
-    }
-
-    // Si se ha ingresado una nueva contraseña, actualizarla
-    if (empty($password)) {
-        // Mantener la contraseña actual
-        $passwordHash = $userData['password'];
-    } else {
-        // Hashear la nueva contraseña
-        $passwordHash = $password;
-    }
-
-    // Llamar a la función para actualizar los datos del usuario
-    if (updateUserData($_SESSION['user_id'], $email, $passwordHash, $profileImageUri)) {
-        $message = "<p class='success-message'>Datos actualizados correctamente.</p>";
-    } else {
-        $message = "<p class='error-message'>Error al actualizar los datos.</p>";
+        $response = uploadProfileImageToS3($username, $file);
+        if ($response['success']) {
+            $imageUrl = $response['url'];
+            $dbResponse = saveImageUrlToDatabase($username, $imageUrl);
+            if ($dbResponse) {
+                echo "<script>alert('Imagen subida y URL guardada en la base de datos.');</script>";
+            } else {
+                echo "<script>alert('Imagen subida, pero hubo un problema al guardar en la base de datos.');</script>";
+            }
+        } else {
+            echo "<script>alert('" . addslashes($response['message']) . "');</script>";
+        }
     }
 }
 ?>

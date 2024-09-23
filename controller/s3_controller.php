@@ -15,37 +15,57 @@ function getS3Client() {
     ]);
 }
 
+// Define el ARN de tu bucket
+$bucketArn = 'arn:aws:s3:::profile-photo-papeleria-cvf';
+$bucketName = basename($bucketArn); // Extrae el nombre del bucket del ARN
+
 function uploadProfileImageToS3($username, $file) {
-    $bucket = 'profile-photo-papeleria-cvf';
+    global $bucketName; // Utiliza el nombre del bucket definido anteriormente
+    
+    if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
+        return [
+            'success' => false,
+            'message' => 'Error en el archivo subido.',
+        ];
+    }
+
     $client = getS3Client();
     $folder = "$username";
     $filename = basename($file['name']);
     $filepath = "$folder/$filename";
 
     try {
-        $client->putObject([
-            'Bucket' => $bucket,
+        $result = $client->putObject([
+            'Bucket' => $bucketName,
             'Key'    => $filepath,
             'SourceFile' => $file['tmp_name'],
             'ACL'    => 'public-read',
         ]);
-        
-        return $client->getObjectUrl($bucket, $filepath);
+
+        return [
+            'success' => true,
+            'url' => $client->getObjectUrl($bucketName, $filepath),
+            'message' => 'Imagen subida correctamente.',
+        ];
     } catch (AwsException $e) {
         error_log($e->getMessage());
-        return false;
+        return [
+            'success' => false,
+            'message' => 'Error al subir la imagen: ' . $e->getMessage(),
+        ];
     }
 }
 
 function deletePreviousProfileImageFromS3($username, $imageUri) {
-    $bucket = 'profile-photo-papeleria-cvf';
+    global $bucketName; // Utiliza el nombre del bucket definido anteriormente
+
     $client = getS3Client();
 
-    $key = str_replace("https://$bucket.s3.amazonaws.com/", "", $imageUri);
+    $key = str_replace("https://$bucketName.s3.amazonaws.com/", "", $imageUri);
 
     try {
         $client->deleteObject([
-            'Bucket' => $bucket,
+            'Bucket' => $bucketName,
             'Key'    => $key,
         ]);
     } catch (AwsException $e) {
